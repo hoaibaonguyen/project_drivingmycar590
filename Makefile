@@ -1,78 +1,70 @@
-#Architecture
-ARCH := $(shell uname -m)
-
 #Compilers
 CC          := g++ -std=c++14 -Wno-psabi
 DGEN        := doxygen
 
 #The Target Binary Program
-TARGET      := stopwatch
+TARGET      := libelma.a
 
 #The Directories, Source, Includes, Objects, Binary and Resources
 SRCDIR      := ./src
 INCDIR      := ./include
 BUILDDIR    := ./build
-TARGETDIR   := ./bin
+TARGETDIR   := ./lib
 SRCEXT      := cc
-
-#Asan library
-ifeq ($(ARCH),armv7l)
-	ASAN := -static-libasan
-else
-	ASAN := -lasan
-endif
 
 #Flags, Libraries and Includes
 CFLAGS      := -fsanitize=address -ggdb
-LIB         := -L../lib -lgtest -lpthread $(ASAN) -lelma -lssl -lcrypto -lcurses
+LIB         := -lgtest -lpthread -lasan
 INC         := -I$(INCDIR)
 INCDEP      := -I$(INCDIR)
 
 #Files
-HEADERS     := $(wildcard ./include/*.h)
-SOURCES     := $(wildcard ./src/*.cc)
-SOURCES		:= $(filter-out ./src/unit_test.cc,$(SOURCES))
-OBJECTS     := $(patsubst %.cc, $(BUILDDIR)/%.o, $(notdir $(SOURCES)))
-NON_MAIN_OBJECTS     := $(filter-out ./build/main.o,$(OBJECTS))
 DGENCONFIG  := docs.config
+HEADERS     := $(wildcard $(INCDIR)/*.h)
+SOURCES     := $(wildcard $(SRCDIR)/*.cc)
+OBJECTS     := $(patsubst %.cc, $(BUILDDIR)/%.o, $(notdir $(SOURCES)))
 
 #Defauilt Make
-all: directories $(TARGETDIR)/$(TARGET) bin/test
-
-docs: docs/index.html
-
-docs/index.html: $(SOURCES) $(HEADERS) README.md docs.config 
-	$(DGEN) $(DGENCONFIG)
-	cp .nojekyll docs
+all: directories $(TARGETDIR)/$(TARGET) tests example
+	echo $(SOURCES) $(HEADERS)
 
 #Remake
-remake: spotless all
+remake: cleaner all
 
 #Make the Directories
 directories:
 	@mkdir -p $(TARGETDIR)
 	@mkdir -p $(BUILDDIR)
 
+tests:
+	cd test && $(MAKE)
+
+example:
+	cd examples && $(MAKE)
+
+docs: docs/index.html
+
+docs/index.html: $(SOURCES) $(HEADERS) README.md docs.config dox/* examples/*.cc
+	$(DGEN) $(DGENCONFIG)
+	cp .nojekyll docs
+
 #Clean only Objects
 clean:
-	@$(RM) -rf $(BUILDDIR)/*.o *.o bin/*
+	@$(RM) -rf $(BUILDDIR)/*.o
+	cd test && $(MAKE) clean
+	cd examples && $(MAKE) clean
 
 #Full Clean, Objects and Binaries
 spotless: clean
 	@$(RM) -rf $(TARGETDIR)/$(TARGET) *.db
-	@$(RM) -rf build bin html latex
-
-#Unit Tester
-bin/test: $(NON_MAIN_OBJECTS) $(HEADERS) ./src/unit_test.cc ./src/test_main.cpp
-	$(CC) $(CFLAGS) $(INC) -c -o test_main.o ./src/test_main.cpp
-	$(CC) $(CFLAGS) -o bin/test test_main.o $(NON_MAIN_OBJECTS) $(LIB)
+	@$(RM) -rf build lib docs/*
+	cd test && $(MAKE) spotless
 
 #Link
 $(TARGETDIR)/$(TARGET): $(OBJECTS) $(HEADERS)
-	$(CC) $(CFLAGS) -o $(TARGETDIR)/$(TARGET) $(OBJECTS) $(LIB)
-
+	ar rvs $@ $(OBJECTS)
+	
 #Compile
-$(BUILDDIR)/%.o: $(SRCDIR)/%.cc $(HEADERS) 
-	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
+$(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT) $(HEADERS)
+	$(CC) $(CFLAGS) $(INC) -c -fPIC -o $@ $<
 
-.PHONY: directories remake clean cleaner apidocs $(BUILDDIR) $(TARGETDIR)
