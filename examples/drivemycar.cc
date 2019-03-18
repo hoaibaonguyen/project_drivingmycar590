@@ -1,5 +1,6 @@
 #include <iostream>
 #include <chrono>
+#include <string>
 #include "elma.h"
 
 //! \file
@@ -10,7 +11,9 @@ using namespace elma;
 
 namespace driving_example {
 
-    //! Example: Another car simulation process. See examples/driving.cc.
+    //! Example: Driving car simulation process. See examples/drivingmycar.cc.
+    //! This example will reuse the driving.cc from Prof. Eric Klavins
+    //! This example will add few more process such as change gear, break, wind velocity, and find gas station as low fuel.
 
     //! See the file examples/driving.cc for usage.
     class Car : public Process {
@@ -25,37 +28,29 @@ namespace driving_example {
 
         //! To start a new simulation, this process sets
         //! the car's velocity to zero kph.    
-        void start() {
-            velocity = 0;
-        }
+        void start() {}
 
         //! The update method gets the latest force from the 
         //! Throttle Channel, if any. Then it updates the 
         //! car's velocity, and sends it out on the Velocity
         //! Channel.     
         void update() {
-            if ( channel("Throttle").nonempty() ) {
-                force = channel("Throttle").latest();
-            }
-            velocity += ( delta() / 1000 ) * ( - k * velocity + force ) / m;
-            channel("Velocity").send(velocity);
-            std::cout << milli_time() << ","
-                    << velocity << " \n";
+            emit(Event("change gear", start_speed));
         }
 
         //! Nothing to do to stop    
         void stop() {}
 
         private:
-        double velocity;
-        double force;
-        const double k = 0.02;
-        const double m = 1000;
+        double start_speed;
+        bool brake_on = true;
+        bool hand_brake = true;
+        
     };  
 
-    //! Example: A cruise controller for a Car process.  See examples/driving.cc.
+    //! Example: A cruise controller for a Car process.  See examples/drivemycar.cc.
 
-    //! See the file examples/driving.cc for usage.
+    //! See the file examples/drivemycar.cc for usage.
     class CruiseControl : public Process {
 
         public:
@@ -105,7 +100,7 @@ namespace driving_example {
 
         //! initialize the desired speed
         void init() {
-            desired_speed = 50;
+            desired_speed = 60;
         }
 
         //! Nothing to do to start
@@ -130,6 +125,226 @@ namespace driving_example {
 
     };
 
+    //! Starting for the Drive My Car Projects
+    class DriveState : public State {
+        
+        public:
+
+            DriveState() : State("Check") {}
+            DriveState(string name) : State(name) {}
+            void entry(const Event& e) {}
+            void during() {} 
+            void exit(const Event& e) {}
+
+    };
+
+    class Drive : public StateMachine {
+    public:
+        //!
+        //! This will implement the car to have the ability to find the gas station when the fuel is low.
+        //! Also this car will automatically stop when issues are found.
+        //! 
+        //! States will be using for the car with EXACT name
+        //! 1/ Those are in use to find the gas station
+        //! "Check", "On", "FindStation", "FillGas"
+        //! 
+        //! 2/ Those are in use when car is having issues
+        //! "Drive", "Off", "Fix"
+        //! 
+        //! Car will be able to respond to events with the EXACT names:
+        //! "key in", "fuel low", "find gas station", "fuel full", "start drive", "issue", "find issue", "issue fixed"
+        
+        Drive(string name) : StateMachine(name), _check("Check"), _on("On"), _find_station("Find Station"), _fill_gas("Fill Gas"), _drive("Drive"), _off("Off"), _fix("Fix") {
+            set_initial(_check);
+            add_transition("key in", _check, _on);
+            add_transition("star drive", _on, _drive);
+            add_transition("fuel low", _drive, _find_station);
+            add_transition("find gas station", _find_station, _fill_gas);
+            add_transition("fuel full", _fill_gas, _check);
+            add_transition("issue", _drive, _off);
+            add_transition("find issue", _off, _fix);
+            add_transition("issue fixed", _fix, _check);
+        }
+        
+        private:
+            DriveState _check,
+                       _on,
+                       _find_station,
+                       _fill_gas,
+                       _drive,
+                       _off,
+                       _fix; 
+    };
+
+    //! Example: A gear changing controller for a Car process.  See examples/drivemycar.cc.
+    class Gear : public Process {
+
+        public: 
+
+        //! Wrap the base process class
+        //! \param name The name of the controller       
+        Gear(std::string name) : Process(name) {}
+
+        //! initialize the desired speed
+        void init() {
+            watch("change gear", [this](Event& e) {
+                running = true;
+            });
+            watch("brake on", [this](Event& e) {
+                brake_on = true;
+            });
+            watch("hand brake", [this](Event& e) {
+                hand_brake = true;
+            });      
+        }
+
+        //! Nothing to do to start
+        void start() {
+            start_speed = 0;
+            //brake_on = true;
+            //hand_brake = true;
+        }
+
+        //! Car will have 6 speed.
+        //! Increament from one gear to one gear will be 10
+        void update() {
+            if ( channel("Throttle").nonempty() ) {
+                force = channel("Throttle").latest();
+            }
+
+            if (gear == "P" && brake_on == true && hand_brake == true){
+                gear = "1";
+                brake_on = false;
+                hand_brake = false;
+                start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
+            } else if (start_speed >= 10 && gear == "1" && brake_on == false && hand_brake == false){
+                gear = "2";
+                start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
+            } else if (start_speed < 10 && gear == "2" && brake_on == false && hand_brake == false){
+                gear = "1";
+                start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
+            } else if (start_speed >= 20 && gear == "2" && brake_on == false && hand_brake == false){
+                gear = "3";
+                start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
+            } else if (start_speed < 20 && gear == "3" && brake_on == false && hand_brake == false){
+                gear = "2";
+                start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
+            } else if (start_speed >= 30 && gear == "3" && brake_on == false && hand_brake == false){
+                gear = "4";
+                start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
+            } else if (start_speed < 30 && gear == "3" && brake_on == false && hand_brake == false){
+                gear = "3";
+                start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
+            } else if (start_speed >= 40 && gear == "4" && brake_on == false && hand_brake == false){
+                gear = "5";
+                start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
+            } else if (start_speed < 40 && gear == "4" && brake_on == false && hand_brake == false){
+                gear = "4";
+                start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
+            } else if (start_speed >= 50 && gear == "5" && brake_on == false && hand_brake == false){
+                gear = "6";
+                start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
+            } else if (start_speed < 50 && gear == "6" && brake_on == false && hand_brake == false){
+                gear = "5";
+                start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
+            } else if (start_speed > 60) {
+                start_speed =60;
+            }
+            start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
+            emit(Event("gear", gear));
+            channel("Velocity").send(start_speed);
+            std::cout << milli_time() << ","
+                    << start_speed << " \n";
+        }
+
+        //! Nothing to do to stop
+        void stop() {}
+
+        private:
+        double start_speed;
+        bool brake_on, hand_brake, running;
+        double force;
+        string gear = "P";
+        const double k = 0.02;
+        const double m = 1000;
+
+    };
+
+    //! Example: A break will be slowing down speed of a Car for a Car process.  See examples/drivemycar.cc.
+    class Brake : public Process {
+
+        public: 
+
+        //! Wrap the base process class
+        //! \param name The name of the controller       
+        Brake(std::string name) : Process(name) {}
+
+        //! initialize the initial condition
+        void init() {
+            watch("brake", [this](Event& e) {
+                running = true;
+                brake_on = true;
+            });  
+        }
+
+        //! Nothing to do to start
+        void start() {
+            brake_on = true;
+            start_speed = 60;
+
+            //brake_on = true;
+            //hand_brake = true;
+        }
+
+        //! Car will have 6 speed.
+        //! Increament from one gear to one gear will be 10
+        void update() {
+            if ( channel("Throttle").nonempty() ) {
+                force = channel("Throttle").latest();
+            }
+
+            if (brake_on == true ){
+                if (start_speed > 50){
+                    start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
+                    gear = "5";
+                } else if (start_speed > 40){
+                    start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
+                    gear = "4";    
+                } else if (start_speed > 30){
+                    start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
+                    gear = "3";    
+                } else if (start_speed > 20){
+                    start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
+                    gear = "2";    
+                } else if (start_speed > 10){
+                    start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
+                    gear = "1";    
+                } else {
+                    start_speed = 0;
+                }
+            } else {
+                brake_on = true;
+            }
+            
+            start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
+            emit(Event("gear", gear));
+            channel("Velocity").send(start_speed);
+            std::cout << milli_time() << ","
+                    << start_speed << " \n";
+        }
+
+        //! Nothing to do to stop
+        void stop() {}
+
+        private:
+        double start_speed;
+        bool brake_on, hand_brake, running;
+        double force;
+        string gear = "P";
+        const double k = 0.02;
+        const double m = 1000;
+
+    };
 }
 
 int main() {
@@ -137,12 +352,16 @@ int main() {
     Manager m;
 
     driving_example::Car car("Car");
+    driving_example::Gear gear("ChangeGear");
     driving_example::CruiseControl cc("Control");
+    driving_example::Brake brake("GetOnBrake");
     driving_example::Driver driver("Steve");
     Channel throttle("Throttle");
     Channel velocity("Velocity");
 
     m.schedule(car, 100_ms)
+    .schedule(gear,100_ms)
+    .schedule(brake, 100_ms)
     .schedule(cc, 100_ms)
     .schedule(driver, 5_s)
     .add_channel(throttle)
