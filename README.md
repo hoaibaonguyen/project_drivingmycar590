@@ -1,7 +1,7 @@
 Drive My Car - Final Project ECE590
 ===
 
-Simple Car is a final project for ECE590. It will be an event loop and manager process to control the car. The car can be geared up and down. Brake will be applied to the car. It will bring the car from higher speed to lower speed and will stop the car completely. 
+Drive My Car is a final project for ECE590. It will be an event loop and manager process to control the car. The car can be geared up and down. Brake will be applied to the car. It will bring the car from higher speed to lower speed and will stop the car completely. 
 
 Goal
 ===
