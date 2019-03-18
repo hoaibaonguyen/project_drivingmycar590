@@ -27,7 +27,24 @@ Car using Finite State Machines
 
 <img src="images/carfinitemachine.png" width="600"></image>
 
+If unable to see the image. Please find the image in folder [images](https://github.com/hoaibaonguyen/project_drivingmycar590/blob/master/images/carfinitemachine.PNG)
+
+```c++
+Drive(string name) : StateMachine(name), _check("Check"), _on("On"), _find_station("Find Station"), _fill_gas("Fill Gas"), _drive("Drive"), _off("Off"), _fix("Fix") {
+            set_initial(_check);
+            add_transition("key in", _check, _on);
+            add_transition("star drive", _on, _drive);
+            add_transition("fuel low", _drive, _find_station);
+            add_transition("find gas station", _find_station, _fill_gas);
+            add_transition("fuel full", _fill_gas, _check);
+            add_transition("issue", _drive, _off);
+            add_transition("find issue", _off, _fix);
+            add_transition("issue fixed", _fix, _check);
+        }
+```
+
 Change Gear
+===
 This class will help to get the car into the desired gear. The car will contain 6 speeds. It will turn from 1 to 2 if velocity is greater than the expected or get from 2 to 1 if velocity is decreasing below the expected velocity, etc. This will be contained in function "update" in Gear class
 ```c++
 void update() {
@@ -54,6 +71,25 @@ void update() {
             std::cout << milli_time() << ","
                     << start_speed << " \n";
         }
+```
+Apply Brake
+===
+```c++
+if (brake_on == true ){
+                if (start_speed > 50){
+                    start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
+                    gear = "5";
+                } 
+                ...
+            } else {
+                brake_on = true;
+            }
+            
+            start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
+            emit(Event("gear", gear));
+            channel("Velocity").send(start_speed);
+            std::cout << milli_time() << ","
+                    << start_speed << " \n";
 ```
 
 Milestones
