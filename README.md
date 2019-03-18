@@ -9,7 +9,7 @@ This project will help me to get more understand on using process and manager to
 
 How to run
 ===
-The source code for Drive My Car [is on Github](git clone https://github.com/hoaibaonguyen/project_drivingmycar590.git).
+The source code for Drive My Car [is on Github](https://github.com/hoaibaonguyen/project_drivingmycar590.git).
 
 From Dockerhub
 ---
