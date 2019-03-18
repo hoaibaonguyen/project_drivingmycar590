@@ -45,33 +45,8 @@ void update() {
             } else if (start_speed < 10 && gear == "2" && brake_on == false && hand_brake == false){
                 gear = "1";
                 start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
-            } else if (start_speed >= 20 && gear == "2" && brake_on == false && hand_brake == false){
-                gear = "3";
-                start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
-            } else if (start_speed < 20 && gear == "3" && brake_on == false && hand_brake == false){
-                gear = "2";
-                start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
-            } else if (start_speed >= 30 && gear == "3" && brake_on == false && hand_brake == false){
-                gear = "4";
-                start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
-            } else if (start_speed < 30 && gear == "3" && brake_on == false && hand_brake == false){
-                gear = "3";
-                start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
-            } else if (start_speed >= 40 && gear == "4" && brake_on == false && hand_brake == false){
-                gear = "5";
-                start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
-            } else if (start_speed < 40 && gear == "4" && brake_on == false && hand_brake == false){
-                gear = "4";
-                start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
-            } else if (start_speed >= 50 && gear == "5" && brake_on == false && hand_brake == false){
-                gear = "6";
-                start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
-            } else if (start_speed < 50 && gear == "6" && brake_on == false && hand_brake == false){
-                gear = "5";
-                start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
-            } else if (start_speed > 60) {
-                start_speed =60;
-            }
+            } 
+            ...
             start_speed += ( delta() / 1000 ) * ( - k * start_speed + force ) / m;
             emit(Event("gear", gear));
             channel("Velocity").send(start_speed);
