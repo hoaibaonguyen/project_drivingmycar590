@@ -1,7 +1,7 @@
 Drive My Car - Final Project ECE590
 ===
 
-Drive My Car is a final project for ECE590. It will be an event loop and manager process to control the car. The car can be geared up and down. Brake will be applied to the car. It will bring the car from higher speed to lower speed and will stop the car completely. 
+Simple Car is a final project for ECE590. It will be an event loop and manager process to control the car. The car can be geared up and down. Brake will be applied to the car. It will bring the car from higher speed to lower speed and will stop the car completely. 
 
 Goal
 ===
@@ -9,14 +9,14 @@ This project will help me to get more understand on using process and manager to
 
 How to run
 ===
-The source code for Drive My Car [is on Github](https://github.com/hoaibaonguyen/simpleCar_ECE590Draft.git).
+The source code for Drive My Car [is on Github](git clone https://github.com/hoaibaonguyen/project_drivingmycar590.git).
 
 From Dockerhub
 ---
 
 To get started, you will need a C++ build environment. Then following the instruction below
 
-    git clone https://github.com/hoaibaonguyen/simpleCar_ECE590Draft.git
+    git clone git clone https://github.com/hoaibaonguyen/project_drivingmycar590.git
     cd simpleCar_ECE590
     docker run -v $PWD:/source -it klavins/elma:latest bash
     make
@@ -24,7 +24,8 @@ To get started, you will need a C++ build environment. Then following the instru
 
 Car using Finite State Machines
 ===
-<img src="images/carfinitemachine.png" width="400"></image>
+
+<img src="images/carfinitemachine.png" width="600"></image>
 
 Change Gear
 This class will help to get the car into the desired gear. The car will contain 6 speeds. It will turn from 1 to 2 if velocity is greater than the expected or get from 2 to 1 if velocity is decreasing below the expected velocity, etc. This will be contained in function "update" in Gear class
