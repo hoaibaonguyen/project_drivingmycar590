@@ -1,11 +1,11 @@
 Drive My Car - Final Project ECE590
 ===
 
-Simple Car is a final project for ECE590. It will be an event loop and manager process to control the car. The car can be geared up and down. Brake will be applied to the car. It will bring the car from higher speed to lower speed and will stop the car completely. 
+Simple Car is a final project for ECE590. It will be an event loop and manager process to control the car. The car can be geared up and down. Brake will be applied to the car. It will also have an implementation of the signal lights such as left signal, right signal, and emergency signal. 
 
 Goal
 ===
-This project will help me to get more understand on using process and manager to implement an example of driving a car
+This project will help me to get more understand on using process and manager as an implementation example of driving a car from speeding up by changing gear, slowing down by pushing brake, and turn left and right using the correct light signal.
 
 How to run
 ===
@@ -28,6 +28,8 @@ Car using Finite State Machines
 <img src="images/carfinitemachine.png" width="600"></image>
 
 If unable to see the image. Please find the image in folder [images](https://github.com/hoaibaonguyen/project_drivingmycar590/blob/master/images/carfinitemachine.PNG)
+
+This implementatin will control the car through all automatical step to ensure the car is being droven in the good condition.
 
 ```c++
 Drive(string name) : StateMachine(name), _check("Check"), _on("On"), _find_station("Find Station"), _fill_gas("Fill Gas"), _drive("Drive"), _off("Off"), _fix("Fix") {
@@ -74,6 +76,7 @@ void update() {
 ```
 Apply Brake
 ===
+This class is designed to bring down the car's speed. It is designed to start at a specific speed. When brake is pushed, velocity will be going down. Also, it will bring back the gear to the initial condition. As the car completely stops, velocity will be down to zero.
 ```c++
 if (brake_on == true ){
                 if (start_speed > 50){
@@ -90,6 +93,12 @@ if (brake_on == true ){
             channel("Velocity").send(start_speed);
             std::cout << milli_time() << ","
                     << start_speed << " \n";
+```
+Signal Lights
+===
+This class is an implementation of the car lights. It will send the signal to the correct light when driver want to make a turn. Also, when driver finds an issue, an emergency light can also be turned on.
+```c++
+
 ```
 
 Milestones
