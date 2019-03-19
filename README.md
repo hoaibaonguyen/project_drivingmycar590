@@ -107,7 +107,7 @@ Milestones
 - Create a change gear class and a way to identify which gear is in (Completed)
 - Create a State Machine will control the car whether the car is low in fuel or having issue (Complete)
 - Create a Brake bring the velocity down (Completed)
-- Create an effect of wind velocity to a car (Expected 3/18)
+- Create a Signal Lights for left turn, right turn, and emergency (Expected 3/18)
 - Create a simulation test with different environments (Half way)
 - Documented project with Doxygen (Expected 3/19)
 - Runable with test and submit the project (Expected 3/21)
