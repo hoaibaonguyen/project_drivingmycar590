@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['trigger',['Trigger',['../classtoggle__switch__example_1_1Trigger.html#aef67dcb2a022bffdbc75eb7905fb286c',1,'toggle_switch_example::Trigger']]]
+  ['update',['update',['../classelma_1_1Manager.html#a16f0db2f3f19b6c6493735b4d25f55c8',1,'elma::Manager::update()'],['../classelma_1_1Process.html#a9731a2218270c49af835c606c09bd6c5',1,'elma::Process::update()'],['../classelma_1_1StateMachine.html#a7a9cf6687da27ab3939ec5cf0a0a4f0e',1,'elma::StateMachine::update()'],['../classdriving__example_1_1Car.html#a28a87f7ae12047c49990cac8a2b925d8',1,'driving_example::Car::update()'],['../classdriving__example_1_1CruiseControl.html#a0b6f94cc907bc5a2a9c0134b1b98904c',1,'driving_example::CruiseControl::update()'],['../classdriving__example_1_1Driver.html#acdd60a3f2a57223cd91af3464f515351',1,'driving_example::Driver::update()'],['../classdriving__example_1_1Gear.html#ad8a6a4c586336f8039bed77ccebd2965',1,'driving_example::Gear::update()'],['../classdriving__example_1_1Brake.html#a68970a38240d8fac76bb65462adec402',1,'driving_example::Brake::update()'],['../classdriving__example_1_1SignalOn.html#a0b34e43e76ca613a6381079b1842167c',1,'driving_example::SignalOn::update()']]],
+  ['url_5fparts',['url_parts',['../classelma_1_1Client.html#aac741ec4c67b09e4baf379c3074c16a4',1,'elma::Client']]]
 ];

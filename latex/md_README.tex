@@ -1,0 +1,81 @@
+Simple Car is a final project for E\+C\+E590. It will be an event loop and manager process to control the car. The car can be geared up and down. Brake will be applied to the car. It will also have an implementation of the signal lights such as left signal, right signal, and emergency signal.
+
+\section*{Goal }
+
+This project will help me to get more understand on using process and manager as an implementation example of driving a car from speeding up by changing gear, slowing down by pushing brake, and turn left and right using the correct light signal.
+
+\section*{How to run }
+
+The source code for Drive My Car \href{https://github.com/hoaibaonguyen/project_drivingmycar590.git}{\tt is on Github}.
+
+\subsection*{From Dockerhub }
+
+To get started, you will need a C++ build environment. Then following the instruction below \begin{DoxyVerb}git clone git clone https://github.com/hoaibaonguyen/project_drivingmycar590.git
+cd simpleCar_ECE590
+docker run -v $PWD:/source -it klavins/elma:latest bash
+make
+examples/bin/drivemycar
+\end{DoxyVerb}
+
+
+\section*{Car using Finite State Machines }
+
+$<$/image$>$
+
+If unable to see the image. Please find the image in folder \href{https://github.com/hoaibaonguyen/project_drivingmycar590/blob/master/images/carfinitemachine.PNG}{\tt images}
+
+This implementatin will control the car through all automatical step to ensure the car is being droven in the good condition.
+
+```c++ Drive(string name) \+: State\+Machine(name), \+\_\+check(\char`\"{}\+Check\char`\"{}), \+\_\+on(\char`\"{}\+On\char`\"{}), \+\_\+find\+\_\+station(\char`\"{}\+Find Station\char`\"{}), \+\_\+fill\+\_\+gas(\char`\"{}\+Fill Gas\char`\"{}), \+\_\+drive(\char`\"{}\+Drive\char`\"{}), \+\_\+off(\char`\"{}\+Off\char`\"{}), \+\_\+fix(\char`\"{}\+Fix\char`\"{}) \{ set\+\_\+initial(\+\_\+check); add\+\_\+transition(\char`\"{}key in\char`\"{}, \+\_\+check, \+\_\+on); add\+\_\+transition(\char`\"{}star drive\char`\"{}, \+\_\+on, \+\_\+drive); add\+\_\+transition(\char`\"{}fuel low\char`\"{}, \+\_\+drive, \+\_\+find\+\_\+station); add\+\_\+transition(\char`\"{}find gas station\char`\"{}, \+\_\+find\+\_\+station, \+\_\+fill\+\_\+gas); add\+\_\+transition(\char`\"{}fuel full\char`\"{}, \+\_\+fill\+\_\+gas, \+\_\+check); add\+\_\+transition(\char`\"{}issue\char`\"{}, \+\_\+drive, \+\_\+off); add\+\_\+transition(\char`\"{}find issue\char`\"{}, \+\_\+off, \+\_\+fix); add\+\_\+transition(\char`\"{}issue fixed\char`\"{}, \+\_\+fix, \+\_\+check); \} ```
+
+\section*{Change Gear }
+
+This class will help to get the car into the desired gear. The car will contain 6 speeds. It will turn from 1 to 2 if velocity is greater than the expected or get from 2 to 1 if velocity is decreasing below the expected velocity, etc. This will be contained in function \char`\"{}update\char`\"{} in Gear class
+
+```c++ void update() \{ if ( channel(\char`\"{}\+Throttle\char`\"{}).nonempty() ) \{ force = channel(\char`\"{}\+Throttle\char`\"{}).latest(); \}
+
+if (gear == \char`\"{}\+P\char`\"{} \&\& brake\+\_\+on == true \&\& hand\+\_\+brake == true)\{ gear = \char`\"{}1\char`\"{}; brake\+\_\+on = false; hand\+\_\+brake = false; start\+\_\+speed += ( delta() / 1000 ) $\ast$ ( -\/ k $\ast$ start\+\_\+speed + force ) / m; \} else if (start\+\_\+speed $>$= 10 \&\& gear == \char`\"{}1\char`\"{} \&\& brake\+\_\+on == false \&\& hand\+\_\+brake == false)\{ gear = \char`\"{}2\char`\"{}; start\+\_\+speed += ( delta() / 1000 ) $\ast$ ( -\/ k $\ast$ start\+\_\+speed + force ) / m; \} else if (start\+\_\+speed $<$ 10 \&\& gear == \char`\"{}2\char`\"{} \&\& brake\+\_\+on == false \&\& hand\+\_\+brake == false)\{ gear = \char`\"{}1\char`\"{}; start\+\_\+speed += ( delta() / 1000 ) $\ast$ ( -\/ k $\ast$ start\+\_\+speed + force ) / m; \} ... start\+\_\+speed += ( delta() / 1000 ) $\ast$ ( -\/ k $\ast$ start\+\_\+speed + force ) / m; emit(Event(\char`\"{}gear\char`\"{}, gear)); channel(\char`\"{}\+Velocity\char`\"{}).send(start\+\_\+speed); std\+::cout $<$$<$ milli\+\_\+time() $<$$<$ \char`\"{},\char`\"{} $<$$<$ start\+\_\+speed $<$$<$ \char`\"{} \textbackslash{}n\char`\"{}; \} ``` Graph from simulation to show the velocity is incrasing from zero to near max 60 while car is changing gear from 1 to 6. Image can be found $<$a href=\char`\"{}https\+://github.\+com/hoaibaonguyen/project\+\_\+drivingmycar590/blob/master/images/gearup.\+P\+N\+G\char`\"{}$>$image
+
+$<$/image$>$
+
+\section*{Apply Brake }
+
+This class is designed to bring down the car's speed. It is designed to start at a specific speed. When brake is pushed, velocity will be going down. Also, it will bring back the gear to the initial condition. As the car completely stops, velocity will be down to zero.
+
+```c++ if (brake\+\_\+on == true )\{ if (start\+\_\+speed $>$ 50)\{ start\+\_\+speed += ( delta() / 1000 ) $\ast$ ( -\/ k $\ast$ start\+\_\+speed + force ) / m; gear = \char`\"{}5\char`\"{}; \} ... \} else \{ brake\+\_\+on = true; \}
+
+start\+\_\+speed += ( delta() / 1000 ) $\ast$ ( -\/ k $\ast$ start\+\_\+speed + force ) / m; emit(Event(\char`\"{}gear\char`\"{}, gear)); channel(\char`\"{}\+Velocity\char`\"{}).send(start\+\_\+speed); std\+::cout $<$$<$ milli\+\_\+time() $<$$<$ \char`\"{},\char`\"{} $<$$<$ start\+\_\+speed $<$$<$ \char`\"{} \textbackslash{}n\char`\"{}; ```
+
+Graph from simulation to show the velocity is decreasing to zero. Image can be found $<$a href=\char`\"{}https\+://github.\+com/hoaibaonguyen/project\+\_\+drivingmycar590/blob/master/images/brake.\+P\+N\+G\char`\"{}$>$image
+
+$<$/image$>$
+
+\section*{Signal Lights }
+
+This class is an implementation of the car lights. It will send the signal to the correct light when driver want to make a turn. Also, when driver finds an issue, an emergency light can also be turned on.
+
+```c++ class Signal\+On \+: public Process \{ public\+: Signal\+On() \+: Process(\char`\"{}signalon\char`\"{}) \{\} void init() \{ watch(\char`\"{}left on\char`\"{}, \mbox{[}this\mbox{]}(Event\& e) \{ lefton = true; righton = false; \}); watch(\char`\"{}right on\char`\"{}, \mbox{[}this\mbox{]}(Event\& e) \{ lefton = false; righton = true; \}); watch(\char`\"{}emergency on\char`\"{}, \mbox{[}this\mbox{]}(Event\& e) \{ lefton = true; righton = true; \}); watch(\char`\"{}signal off\char`\"{}, \mbox{[}this\mbox{]}(Event \&e) \{ lefton = false; righton = false; \}); watch(\char`\"{}light on\char`\"{}, \mbox{[}this\mbox{]}(Event\& e) \{ light\+\_\+on\+\_\+power = e.\+value(); \}); \} void start() \{ lefton = false; righton = false; light\+\_\+on\+\_\+power = 0; \} void update() \{\} void stop() \{\}
+
+bool lefton, righton; double light\+\_\+on\+\_\+power; \}; ``` The specific of each signal light work can be found in folder \href{https://github.com/hoaibaonguyen/project_drivingmycar590/tree/master/examples}{\tt examples/drivemycar.\+cc}
+
+\section*{Improvements }
+
+This project is fun. This is my first time to learn C and C++. There are a lot of things for me to improve in general. To this project, there are still issues that I have faced during running the simulation. Here are some challenges that I need to learn and improve in the future\+:
+\begin{DoxyItemize}
+\item Have gear and brake be able to run together.
+\item Design an user interface for driver to select the signal light buttons.
+\item Learn about document the project efficiently
+\end{DoxyItemize}
+
+\section*{Milestones }
+
+
+\begin{DoxyItemize}
+\item Create a change gear class and a way to identify which gear is in (Completed)
+\item Create a State Machine will control the car whether the car is low in fuel or having issue (Complete)
+\item Create a Brake bring the velocity down (Completed)
+\item Create a Signal Lights for left turn, right turn, and emergency (Completed)
+\item Create a simulation test with different environments (Completed)
+\item Documented project with Doxygen (Completed)
+\item Runable with test and submit the project (Upload to Git\+Hub on 3/21) 
+\end{DoxyItemize}

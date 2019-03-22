@@ -2,6 +2,7 @@
 #include <chrono>
 #include <string>
 #include "elma.h"
+#include "gtest/gtest.h"
 
 //! \file
 
@@ -290,8 +291,11 @@ namespace driving_example {
         //! Nothing to do to start
         void start() {
             brake_on = true;
-            start_speed = 60;
-
+            if ( channel("Velocity").nonempty() ) {
+                start_speed = channel("Velocity").latest();
+            } else {
+                start_speed = 60;
+            }
             //brake_on = true;
             //hand_brake = true;
         }
@@ -345,6 +349,107 @@ namespace driving_example {
         const double m = 1000;
 
     };
+    //! Example: A signal light will allow the car make a caution whenever it tries to turn left, right or in emergency.  See examples/drivemycar.cc.
+    class SignalOn : public Process {
+
+        public:
+        SignalOn() : Process("signalon") {}
+        void init() {
+            watch("left on", [this](Event& e) {
+                lefton = true;
+                righton = false;
+            });
+            watch("right on", [this](Event& e) {
+                lefton = false;
+                righton = true;
+            });
+            watch("emergency on", [this](Event& e) {
+                lefton = true;
+                righton = true;
+            });
+            watch("signal off", [this](Event &e) {
+                lefton = false;
+                righton = false;
+            });
+            watch("light on", [this](Event& e) {
+                light_on_power = e.value();
+            });
+        }
+        void start() {
+            lefton = false;
+            righton = false;
+            light_on_power = 0;
+        }
+        void update() {}
+        void stop() {}
+
+        bool lefton,
+            righton;
+        double light_on_power;
+
+    };
+
+    //! A class for left signal
+    class SignalLeft : public State {
+        public:
+        SignalLeft() : State("left off") {}
+        void entry(const Event& e) {
+            if ( e.name() == "left light on" ) {
+                emit(Event("light on", e.value()));
+            }
+        }
+        void during() {} 
+        void exit(const Event& e) {
+            if ( e.name() == "left signal button on" ) {
+                emit(Event("left on"));
+            }        
+        }
+    };
+
+    //! A class for right signal
+    class SignalRight : public State {
+        public:
+        SignalRight() : State("right off") {}
+        void entry(const Event& e) {
+            if ( e.name() == "right light on" ) {
+                emit(Event("light on", e.value()));
+            }
+        }
+        void during() {} 
+        void exit(const Event& e) {
+            if ( e.name() == "right signal button on" ) {
+                emit(Event("right on"));
+            }        
+        }
+    };
+
+    //! A class for emergency signal
+    class Emergency : public State {
+        public:
+        Emergency() : State("emergency light off") {}
+        void entry(const Event& e) {
+            if ( e.name() == "emergency light on" ) {
+                emit(Event("light on", e.value()));
+            }
+        }
+        void during() {} 
+        void exit(const Event& e) {
+            if ( e.name() == "emergency signal button on" ) {
+                emit(Event("emergency on"));
+            }        
+        }
+    };
+
+    //! A class to turn the light signal off
+    class SignalOff : public State {
+        public:
+        SignalOff() : State("Signal light off") {}
+        void entry(const Event& e) {}
+        void during() {} 
+        void exit(const Event& e) {
+            emit(Event("signal off"));
+        }
+    };
 }
 
 int main() {
@@ -361,12 +466,11 @@ int main() {
 
     m.schedule(car, 100_ms)
     .schedule(gear,100_ms)
-    .schedule(brake, 100_ms)
     .schedule(cc, 100_ms)
+    //.schedule(brake, 100_ms)
     .schedule(driver, 5_s)
     .add_channel(throttle)
     .add_channel(velocity)
     .init()
     .run(40_s);
-
 }

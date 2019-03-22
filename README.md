@@ -48,6 +48,7 @@ Drive(string name) : StateMachine(name), _check("Check"), _on("On"), _find_stati
 Change Gear
 ===
 This class will help to get the car into the desired gear. The car will contain 6 speeds. It will turn from 1 to 2 if velocity is greater than the expected or get from 2 to 1 if velocity is decreasing below the expected velocity, etc. This will be contained in function "update" in Gear class
+
 ```c++
 void update() {
             if ( channel("Throttle").nonempty() ) {
@@ -74,9 +75,15 @@ void update() {
                     << start_speed << " \n";
         }
 ```
+Graph from simulation to show the velocity is incrasing from zero to near max 60 while car is changing gear from 1 to 6. Image can be found @[image](https://github.com/hoaibaonguyen/project_drivingmycar590/blob/master/images/gearup.PNG)
+
+<img src="images/gearup.png" width="600"></image>
+
+
 Apply Brake
 ===
 This class is designed to bring down the car's speed. It is designed to start at a specific speed. When brake is pushed, velocity will be going down. Also, it will bring back the gear to the initial condition. As the car completely stops, velocity will be down to zero.
+
 ```c++
 if (brake_on == true ){
                 if (start_speed > 50){
@@ -94,12 +101,62 @@ if (brake_on == true ){
             std::cout << milli_time() << ","
                     << start_speed << " \n";
 ```
+
+Graph from simulation to show the velocity is decreasing to zero. Image can be found @[image](https://github.com/hoaibaonguyen/project_drivingmycar590/blob/master/images/brake.PNG)
+
+<img src="images/brake.png" width="600"></image>
+
 Signal Lights
 ===
 This class is an implementation of the car lights. It will send the signal to the correct light when driver want to make a turn. Also, when driver finds an issue, an emergency light can also be turned on.
-```c++
 
+```c++
+class SignalOn : public Process {
+        public:
+        SignalOn() : Process("signalon") {}
+        void init() {
+            watch("left on", [this](Event& e) {
+                lefton = true;
+                righton = false;
+            });
+            watch("right on", [this](Event& e) {
+                lefton = false;
+                righton = true;
+            });
+            watch("emergency on", [this](Event& e) {
+                lefton = true;
+                righton = true;
+            });
+            watch("signal off", [this](Event &e) {
+                lefton = false;
+                righton = false;
+            });
+            watch("light on", [this](Event& e) {
+                light_on_power = e.value();
+            });
+        }
+        void start() {
+            lefton = false;
+            righton = false;
+            light_on_power = 0;
+        }
+        void update() {}
+        void stop() {}
+
+        bool lefton,
+            righton;
+        double light_on_power;
+    };
 ```
+The specific of each signal light work can be found in folder [examples/drivemycar.cc](https://github.com/hoaibaonguyen/project_drivingmycar590/tree/master/examples)
+
+Improvements
+===
+
+This project is fun. This is my first time to learn C and C++. There are a lot of things for me to improve in general. To this project, there are still issues that I have faced during running the simulation. Here are some challenges that I need to learn and improve in the future:
+- Have gear and brake be able to run together.
+- Design an user interface for driver to select the signal light buttons.
+- Learn about document the project efficiently
 
 Milestones
 ===
@@ -107,7 +164,7 @@ Milestones
 - Create a change gear class and a way to identify which gear is in (Completed)
 - Create a State Machine will control the car whether the car is low in fuel or having issue (Complete)
 - Create a Brake bring the velocity down (Completed)
-- Create a Signal Lights for left turn, right turn, and emergency (Expected 3/18)
-- Create a simulation test with different environments (Half way)
-- Documented project with Doxygen (Expected 3/19)
-- Runable with test and submit the project (Expected 3/21)
+- Create a Signal Lights for left turn, right turn, and emergency (Completed)
+- Create a simulation test with different environments (Completed)
+- Documented project with Doxygen (Completed)
+- Runable with test and submit the project (Upload to GitHub on 3/21)
