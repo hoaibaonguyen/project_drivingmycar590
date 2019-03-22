@@ -1,4 +1,4 @@
-Elma: The Event Loop Manager
+Driving My Car - The Next Generation of Car
 ===
 
 Copyright 2019 University of Washington

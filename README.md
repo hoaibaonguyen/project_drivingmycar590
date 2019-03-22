@@ -3,6 +3,8 @@ Drive My Car - Final Project ECE590
 
 Simple Car is a final project for ECE590. It will be an event loop and manager process to control the car. The car can be geared up and down. Brake will be applied to the car. It will also have an implementation of the signal lights such as left signal, right signal, and emergency signal. 
 
+Link to docs file [her](https://hoaibaonguyen.github.io/project_drivingmycar590/)
+
 Goal
 ===
 This project will help me to get more understand on using process and manager as an implementation example of driving a car from speeding up by changing gear, slowing down by pushing brake, and turn left and right using the correct light signal.
